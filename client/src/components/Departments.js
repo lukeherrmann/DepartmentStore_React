@@ -1,10 +1,12 @@
 import React from "react";
+import DepartmentsForm from "./DepartmentsForm"
 import axios from "axios";
 import { Link, } from "react-router-dom";
-import { Card, Header, Button, Icon } from "semantic-ui-react";
+import HeaderText from "./HeaderText";
+import { Card, Button, Icon, Segment } from "semantic-ui-react";
 
 class Departments extends React.Component {
-  state = { departments: [], }
+  state = { departments: [], editing: false, }
 
   componentDidMount() {
     axios.get("/api/departments")
@@ -21,44 +23,49 @@ class Departments extends React.Component {
       return <h2>No Departments Available :(</h2>
     return departments.map(d => (
       <Card key={d.id}>
-        <Card.Content>
-          <Card.Header>{d.name}</Card.Header>
-          <Card.Description>
-            {d.description}
-          </Card.Description>
-        </Card.Content>
+        {this.state.editing ? <DepartmentsForm {...departments} />
+          :
+          <Card.Content>
+            <Card.Header>{d.name}</Card.Header>
+            <Card.Description>
+              {d.description}
+            </Card.Description>
+          </Card.Content>
+        }
         <Card.Content extra>
-          <Button icon color='red' size="tiny">
-            <Icon name="trash" />
+          <Button icon color='red' size="tiny" >
+            <Icon onClick={() => this.deleteDepartment(d.id)} name="trash" />
           </Button>
-          <Button icon size="tiny">
+          <Button onClick={() => this.toggleEdit(d.id)} icon size="tiny">
             <Icon name="edit" />
           </Button>
-          <Button size="tiny">
-            See More...
+          <Button as={Link} size="tiny" to={`/departments/${d.id}/items`}>
+            See Items...
           </Button>
         </Card.Content>
       </Card>
     ))
   }
 
- deleteDepartment = (id) => {
+  deleteDepartment = (id) => {
     axios.delete(`/api/departments/${id}`)
-    .then( res => {
-      debugger
-      const { departments, } = this.state;
-      this.setState({ departments: departments.filter(t => t.id !== id), })
-    })
+      .then(res => {
+        const { departments, } = this.state;
+        this.setState({ departments: departments.filter(d => d.id !== id), })
+      })
   }
+
+  toggleEdit = (id) => this.setState({ editing: !this.state.editing })
 
   render() {
     return (
       <div>
-        <Header as="h1">Departments</Header>
+        <HeaderText fSize='large'>Luke's Department Store</HeaderText>
         <br />
-        <Button as={Link} color="blue" to="/departments/new">
-          Add Department
-        </Button>
+        <br />
+        <Segment>
+          <HeaderText fSize='medium'>All Departments</HeaderText>
+        </Segment>
         <br />
         <br />
         <Card.Group>
@@ -68,5 +75,6 @@ class Departments extends React.Component {
     )
   }
 }
+
 
 export default Departments;
