@@ -7,23 +7,36 @@ class Api::ItemsController < ApplicationController
   end
 
   def show
-    render json: @department.item
+    render json: @item
   end
 
   def create
+    item = @department.items.new(item_params)
+
+    if item.save
+      render json: item
+    else
+      render json: item.errors, status: 422
+    end
   end
 
   def update
+    if @item.update(item_params)
+      render json: @item
+    else
+      render json: @item.errors, status: 422
+    end
   end
 
   def destroy
+    @item.destroy
   end
 
-  private 
+  private
   def set_department
-    @department = department.find(params[:department_id])
+    @department = Department.find(params[:department_id])
   end
-
+  
   def set_item
     @item = Item.find(params[:id])
   end
@@ -31,4 +44,6 @@ class Api::ItemsController < ApplicationController
   def item_params
     params.require(:item).permit(:item_name, :item_description, :price)
   end
+
+
 end
